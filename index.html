@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>LFM Radio - Chat Interactivo</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
+    
+    <!-- Meta tags para compartir en WhatsApp/redes -->
+    <meta property="og:title" content="🎙️ LFM Radio en Vivo">
+    <meta property="og:description" content="Escucha en vivo, envía dedicatorias y chatea con el DJ">
+    <meta property="og:type" content="website">
+    
+    <link rel="stylesheet" href="diseño.css">
+</head>
+<body>
+<div class="container">
+    
+    <!-- ========== HEADER ========== -->
+    <header>
+        <div class="logo">🎙️ LFM RADIO</div>
+        <div class="tagline">Chat interactivo | Dedicatorias en vivo</div>
+    </header>
+
+    <!-- ========== SECCIÓN DJ ========== -->
+    <div class="dj-section">
+        <h2 class="section-title">🎧 DJ EN VIVO</h2>
+        <div class="dj-info">
+            <div class="dj-avatar-wrapper">
+                <!-- 
+                    ⬇️⬇️⬇️ AGREGA TU IMAGEN AQUÍ ⬇️⬇️⬇️
+                    
+                    📸 INSTRUCCIONES:
+                    1. Crea la carpeta "img" en tu repositorio
+                    2. Sube tu foto con el nombre: dj-andres.jpg
+                    3. Formatos: .jpg, .png, .webp
+                    4. Tamaño ideal: 400x400 píxeles (cuadrada)
+                    5. Peso máximo: 150 KB
+                -->
+                <img src="imagenes/1002137913.jpg" 
+                     alt="DJ Andrés" 
+                     class="dj-avatar"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="dj-avatar-fallback" style="display: none;">AD</div>
+                <!-- ⬆️⬆️⬆️ FIN DE LA IMAGEN ⬆️⬆️⬆️ -->
+                
+                <span class="dj-live-badge">🔴 LIVE</span>
+            </div>
+            <div class="dj-details">
+                <h3 id="djName">DJ DEIBY</h3>
+                <div class="dj-status"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== CONTENIDO PRINCIPAL ========== -->
+    <div class="main-content">
+        
+        <!-- ========== REPRODUCTOR COOL ========== -->
+        <div class="player-section">
+            <h2 class="section-title">🔴 Transmisión en Vivo</h2>
+            
+            <div class="player-cool">
+                <!-- Badge EN VIVO -->
+                <div class="live-badge">
+                    <span class="live-dot"></span>
+                    EN VIVO
+                </div>
+
+                <!-- Botón central gigante -->
+                <button class="play-btn-cool" id="playPauseBtn" aria-label="Reproducir">
+                    <span class="icon-play">▶</span>
+                    <span class="icon-pause">⏸</span>
+                </button>
+
+                <!-- Ondas animadas -->
+                <div class="waveform-cool" id="waveformCool">
+                    <span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
+
+                <!-- Info de la pista -->
+                <div class="track-info-cool">
+                    <div class="track-title-cool">LFM Radio</div>
+                    <div class="track-artist-cool">Música 24/7 · En vivo</div>
+                </div>
+
+                <!-- Volumen -->
+                <div class="volume-cool">
+                    <button class="volume-btn" id="volumeBtn" aria-label="Silenciar">
+                        🔊
+                    </button>
+                    <input type="range" id="volumeSlider" class="volume-slider-cool" min="0" max="100" value="70">
+                </div>
+            </div>
+
+            <!-- Audio con fallback automático -->
+            <audio id="lfmPlayer" preload="metadata" crossorigin="anonymous">
+                <source src="https://radios.yanapak.org/Medina%20Radio" type="application/ogg">
+                <source src="https://radios.yanapak.org/Medina%20Radio" type="application/ogg">
+            </audio>
+        </div>
+
+        <!-- ========== CHAT INTERACTIVO ========== -->
+        <div class="player-section">
+            <h2 class="section-title">💬 Chat Interactivo</h2>
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-message system">
+                        <span class="message-content">🎉 ¡Chat interactivo! Reacciona con ❤️ 😂 👍</span>
+                    </div>
+                </div>
+                <div id="typingIndicatorContainer" class="typing-indicator" style="display: none;"></div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Escribe tu mensaje..." maxlength="200">
+                    <button class="btn chat-send-btn" id="sendBtn">Enviar</button>
+                    <button class="btn media-btn" id="imageBtn" title="Enviar imagen">📷</button>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                </div>
+                <div class="chat-actions">
+                    <div class="chat-user-info">
+                        <input type="text" class="chat-name-input" id="userName" placeholder="Tu nombre" maxlength="20" value="Oyente">
+                    </div>
+                    <button class="btn btn-whatsapp" id="whatsappBtn">🎵 Dedicar canción</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SECCIÓN REALIZAR DEDICATORIA ========== -->
+    <div class="dedication-section">
+        <h2 class="section-title">🎁 Realizar Dedicatoria</h2>
+        <p class="dedication-subtitle">Envía una canción dedicada a alguien especial 💕</p>
+
+        <div class="dedication-form">
+            <div class="form-row">
+                <label for="dedFrom">👤 De:</label>
+                <input type="text" id="dedFrom" class="ded-input" placeholder="Tu nombre" maxlength="30">
+            </div>
+
+            <div class="form-row">
+                <label for="dedTo">💝 Para:</label>
+                <input type="text" id="dedTo" class="ded-input" placeholder="Nombre de quien recibe" maxlength="30">
+            </div>
+
+            <div class="form-row">
+                <label for="dedSong">🎵 Canción (opcional):</label>
+                <input type="text" id="dedSong" class="ded-input" placeholder="Nombre de la canción" maxlength="60">
+            </div>
+
+            <div class="form-row">
+                <label for="dedMessage">💬 Mensaje (opcional):</label>
+                <textarea id="dedMessage" class="ded-textarea" placeholder="Escribe tu mensaje especial..." maxlength="200"></textarea>
+            </div>
+
+            <div class="form-row">
+                <label>🖼️ Imagen (opcional):</label>
+                <button type="button" class="btn ded-image-btn" id="dedImageBtn">📷 Subir imagen</button>
+                <input type="file" id="dedImageInput" accept="image/*" style="display: none;">
+                <div class="ded-image-preview" id="dedImagePreview"></div>
+            </div>
+
+            <button class="btn btn-dedication" id="sendDedicationBtn">
+                💌 Enviar dedicatoria
+            </button>
+        </div>
+    </div>
+
+    <!-- ========== OVERLAY DE DEDICATORIA ========== -->
+    <div class="dedication-overlay" id="dedicationOverlay">
+        <div class="dedication-card">
+            <div class="dedication-header">
+                <span>🎵 DEDICATORIA 🎵</span>
+            </div>
+
+            <div class="dedication-image-container" id="dedOverlayImage"></div>
+
+            <div class="dedication-info">
+                <div class="ded-from-to">
+                    <div class="ded-line">
+                        <span class="ded-label">👤 De:</span>
+                        <span class="ded-value" id="dedOverlayFrom"></span>
+                    </div>
+                    <div class="ded-line">
+                        <span class="ded-label">💝 Para:</span>
+                        <span class="ded-value" id="dedOverlayTo"></span>
+                    </div>
+                </div>
+
+                <div class="ded-song-info">
+                    <div class="ded-song">
+                        🎶 <strong id="dedOverlaySong"></strong>
+                    </div>
+                </div>
+
+                <div class="ded-message" id="dedOverlayMessage"></div>
+            </div>
+
+            <div class="dedication-progress">
+                <div class="dedication-progress-bar" id="dedProgressBar"></div>
+            </div>
+            <div class="dedication-timer" id="dedTimer">10s</div>
+        </div>
+    </div>
+
+    <!-- ========== FOOTER ========== -->
+    <div class="current-track">
+        <div class="copyright-text">© 2025 <strong>Creada por Ronald Medina</strong> | RONALD</div>
+        <div class="copyright-subtitle">📻 Interactúa con el chat, envía mensajes y dedicatorias</div>
+    </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="logica.js"></script>
+</body>
+</html>
