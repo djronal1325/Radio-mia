@@ -10,7 +10,6 @@ const audio = document.getElementById('lfmPlayer');
 const playPauseBtn = document.getElementById('playPauseBtn');
 const volumeSlider = document.getElementById('volumeSlider');
 const volumeBtn = document.getElementById('volumeBtn');
-const waveformCool = document.getElementById('waveformCool');
 
 // Configurar audio
 if (audio) {
@@ -20,7 +19,7 @@ if (audio) {
     audio.crossOrigin = 'anonymous';
 }
 
-// Si falla la URL principal, usar fallback
+// Fallback si falla la URL principal
 if (audio) {
     audio.addEventListener('error', () => {
         console.log('⚠️ Fallback al .m3u');
@@ -47,14 +46,16 @@ if (playPauseBtn && audio) {
 }
 
 audio.addEventListener('play', () => {
-    playPauseBtn.textContent = '⏸';
-    playPauseBtn.classList.add('playing');
+    if (playPauseBtn) {
+        playPauseBtn.classList.add('playing');
+    }
     startWaveAnimation();
 });
 
 audio.addEventListener('pause', () => {
-    playPauseBtn.textContent = '▶';
-    playPauseBtn.classList.remove('playing');
+    if (playPauseBtn) {
+        playPauseBtn.classList.remove('playing');
+    }
     stopWaveAnimation();
 });
 
@@ -72,11 +73,11 @@ if (volumeBtn && audio) {
         if (audio.volume > 0) {
             previousVolume = audio.volume;
             audio.volume = 0;
-            volumeSlider.value = 0;
+            if (volumeSlider) volumeSlider.value = 0;
             volumeBtn.textContent = '🔇';
         } else {
             audio.volume = previousVolume;
-            volumeSlider.value = previousVolume * 100;
+            if (volumeSlider) volumeSlider.value = previousVolume * 100;
             volumeBtn.textContent = '🔊';
         }
     });
@@ -383,7 +384,9 @@ if (imageBtn && imageInputFile) {
     });
 }
 
-// ========== WHATSAPP ==========
+// ============================================================
+// WHATSAPP - Botón "🎵 Dedicar canción"
+// ============================================================
 const whatsappBtn = document.getElementById('whatsappBtn');
 if (whatsappBtn) {
     whatsappBtn.addEventListener('click', () => {
@@ -413,6 +416,7 @@ const dedImageInput = document.getElementById('dedImageInput');
 const dedImagePreview = document.getElementById('dedImagePreview');
 const sendDedicationBtn = document.getElementById('sendDedicationBtn');
 
+// Subir imagen en dedicatoria
 if (dedImageBtn && dedImageInput) {
     dedImageBtn.addEventListener('click', () => dedImageInput.click());
     
@@ -440,11 +444,13 @@ if (dedImageBtn && dedImageInput) {
 
 window.removeDedImage = function() {
     dedSelectedImage = null;
-    dedImagePreview.innerHTML = '';
+    if (dedImagePreview) dedImagePreview.innerHTML = '';
     if (dedImageInput) dedImageInput.value = '';
 };
 
-// Cola de dedicatorias (para que no se pisen)
+// ============================================================
+// COLA DE DEDICATORIAS (para que no se pisen)
+// ============================================================
 const dedicationQueue = [];
 let showingDedication = false;
 
@@ -466,7 +472,9 @@ function processDedicationQueue() {
     });
 }
 
-// Enviar dedicatoria
+// ============================================================
+// ENVIAR DEDICATORIA (SIN abrir WhatsApp)
+// ============================================================
 if (sendDedicationBtn) {
     sendDedicationBtn.addEventListener('click', () => {
         const from = document.getElementById('dedFrom').value.trim();
@@ -488,23 +496,8 @@ if (sendDedicationBtn) {
             time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
         };
         
-        // Guardar en Firebase → todos lo ven
+        // Guardar en Firebase → TODOS lo ven (incluido tú)
         database.ref('dedicatorias').push(dedicationData);
-        
-        // Enviar por WhatsApp
-        const whatsappMsg = 
-            '🎵 DEDICATORIA PARA LFM RADIO 🎙️\n\n' +
-            `👤 De: ${from}\n` +
-            `💝 Para: ${to}\n\n` +
-            `🎶 Canción: ${dedicationData.song}\n\n` +
-            `💬 ${dedicationData.message}`;
-        
-        setTimeout(() => {
-            window.open(
-                'https://wa.me/573218384587?text=' + encodeURIComponent(whatsappMsg),
-                '_blank'
-            );
-        }, 500);
         
         // Limpiar formulario
         document.getElementById('dedFrom').value = '';
@@ -512,10 +505,14 @@ if (sendDedicationBtn) {
         document.getElementById('dedSong').value = '';
         document.getElementById('dedMessage').value = '';
         removeDedImage();
+        
+        console.log('✅ Dedicatoria enviada');
     });
 }
 
-// Mostrar overlay 10 segundos
+// ============================================================
+// MOSTRAR OVERLAY 30 SEGUNDOS
+// ============================================================
 function showDedicationOverlay(data, onComplete) {
     const overlay = document.getElementById('dedicationOverlay');
     if (!overlay) return;
@@ -532,7 +529,7 @@ function showDedicationOverlay(data, onComplete) {
     
     overlay.classList.add('active');
     
-    const DURATION = 10;
+    const DURATION = 30;   // ⏱️ 30 SEGUNDOS
     let remaining = DURATION;
     
     const progressBar = document.getElementById('dedProgressBar');
@@ -565,20 +562,28 @@ function showDedicationOverlay(data, onComplete) {
     };
 }
 
-// Escuchar dedicatorias en Firebase (para que TODOS las vean)
+// ============================================================
+// ESCUCHAR DEDICATORIAS EN VIVO (para que TODOS las vean)
+// ============================================================
 const dedicationsRef = database.ref('dedicatorias');
-dedicationsRef.limitToLast(1).on('child_added', (snapshot) => {
+let lastDedicationTimestamp = 0;
+
+// Escuchamos las últimas 5 dedicatorias
+dedicationsRef.limitToLast(5).on('child_added', (snapshot) => {
     const ded = snapshot.val();
     if (!ded || !ded.timestamp) return;
     
-    // Solo mostrar si es reciente (últimos 60 segundos)
+    // Ignorar dedicatorias viejas (más de 120 segundos = 2 minutos)
     const age = Date.now() - ded.timestamp;
-    if (age > 60000 || age < -5000) return;
+    if (age > 120000) return;
     
-    // Evitar mostrarla dos veces
-    if (window.lastDedicationShown === ded.timestamp) return;
-    window.lastDedicationShown = ded.timestamp;
+    // Evitar mostrar la misma dos veces
+    if (ded.timestamp <= lastDedicationTimestamp) return;
+    lastDedicationTimestamp = ded.timestamp;
     
+    console.log('🎵 Nueva dedicatoria:', ded.from, '→', ded.to);
+    
+    // Mostrar overlay a TODOS por 30 segundos
     queueDedication(ded);
 });
 
@@ -602,3 +607,5 @@ currentUser = getCurrentUser();
 
 console.log('✅ LFM Radio inicializada correctamente');
 console.log('🎙️ Creada por Ronald Medina');
+console.log('🎵 Dedicatorias visibles para TODOS');
+console.log('⏱️ Duración: 30 segundos');
